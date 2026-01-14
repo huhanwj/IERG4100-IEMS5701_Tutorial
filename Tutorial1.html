@@ -71,7 +71,6 @@
             animation: fadeIn 0.4s ease-out forwards;
         }
     </style>
-    <!-- Chosen Palette: Warm Neutrals & Deep Blue -->
 </head>
 <body class="bg-[#fdfbf7] text-slate-800 font-sans min-h-screen flex flex-col">
 
@@ -83,7 +82,6 @@
                 <p class="text-sm text-slate-500">Shared Wireless Medium & TDMA Interactive Review</p>
             </div>
             <div class="hidden sm:block text-xs text-slate-400">
-                Updated: Added Q5 Dynamic Constraints
             </div>
         </div>
     </header>
@@ -101,7 +99,7 @@
                 Q2: Uplink Efficiency
             </button>
             <button onclick="switchTab('ex5')" id="tab-ex5" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">
-                Q5: System Limits
+                Q3: System Limits
             </button>
         </div>
     </nav>
@@ -114,7 +112,7 @@
             <div class="max-w-3xl mx-auto text-center">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">The Shared Wireless Medium</h2>
                 <p class="text-slate-600">
-                    Wireless networks differ fundamentally from wired ones. The medium is broadcast (everyone hears everyone), half-duplex (cannot listen while talking), and subject to destructive collisions. TDMA (Time Division Multiple Access) is a key technique to manage this chaos.
+                    Understanding the physical constraints of the wireless channel is the first step to designing MAC protocols.
                 </p>
             </div>
 
@@ -125,16 +123,20 @@
                         <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">📡</span>
                         The Collision Model
                     </h3>
-                    <ul class="space-y-3 text-sm text-slate-600">
-                        <li class="flex items-start">
-                            <span class="mr-2 text-red-500 font-bold">•</span>
-                            <span><strong>Slotted Time:</strong> Transmissions sync to a clock tick ($T$). This reduces the "vulnerable period" for collisions by half compared to unslotted systems.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="mr-2 text-red-500 font-bold">•</span>
-                            <span><strong>Destructive:</strong> If 2+ packets overlap, 100% data loss. We assume no "capture effect" (stronger signal winning).</span>
-                        </li>
-                    </ul>
+                    <div class="text-sm text-slate-600 space-y-3">
+                        <p>We adopt a simplified "Collision Channel" model for this course. While pessimistic, it allows for clean analysis.</p>
+                        <ul class="list-disc pl-4 space-y-2">
+                            <li>
+                                <strong>Why Slotted Time?</strong> 
+                                <br>In unslotted (pure) systems, a packet of length $T$ is vulnerable to collisions for a duration of $2T$ (any overlap ruins the packet). 
+                                <br>Syncing to slots reduces this "vulnerable period" to exactly $T$. This doubles the theoretical throughput.
+                            </li>
+                            <li>
+                                <strong>Why Destructive?</strong>
+                                <br>We assume no "capture effect". Even if one signal is stronger, any overlap results in 100% packet loss ($SINR \to 0$).
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 
                 <!-- Concept Card 2 -->
@@ -143,76 +145,139 @@
                         <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">⚡</span>
                         Static vs. Dynamic TDMA
                     </h3>
-                    <div class="text-sm text-slate-600 space-y-2">
-                        <p><strong class="text-slate-800">Static:</strong> Pre-assigned slots (Round Robin). <br><em>Pro:</em> Simple, fair. <br><em>Con:</em> Wasteful if users are silent; scales poorly.</p>
-                        <p><strong class="text-slate-800">Dynamic:</strong> Allocates slots per frame based on demand. <br><em>Pro:</em> High efficiency for bursty traffic. <br><em>Con:</em> Overhead (Headers & Requests).</p>
+                    <div class="text-sm text-slate-600 space-y-3">
+                        <p><strong>Static TDMA (Circuit Switched):</strong></p>
+                        <ul class="list-disc pl-4">
+                            <li>Fixed assignment (Round Robin).</li>
+                            <li>Zero overhead ($T_{header} = 0$).</li>
+                            <li><strong>Problem:</strong> Capacity is hard-limited by $N_{users}$. If user is silent, slot is wasted ($Efficiency \to 0$).</li>
+                        </ul>
+                        <p><strong>Dynamic TDMA (Packet Switched):</strong></p>
+                        <ul class="list-disc pl-4">
+                            <li>Assignments change every frame based on <strong>Demand</strong>.</li>
+                            <li><strong>Benefit:</strong> Statistical Multiplexing. Silent users consume no slots.</li>
+                            <li><strong>Cost:</strong> We must pay "Metadata Tax" (Headers, Reservations, Allocations).</li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Concept Card 3: Link Establishment -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 md:col-span-2 transition hover:shadow-md">
+                <!-- NEW: Fixed TDMA Example -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 transition hover:shadow-md md:col-span-2">
                     <h3 class="font-bold text-[#005088] mb-3 text-lg flex items-center">
-                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">🔗</span>
-                        Link Establishment (The "Chicken & Egg" Problem)
+                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">🛑</span>
+                        Fixed TDMA with 2-bit Headers
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
-                        <div>
-                            <p class="mb-2"><strong>Problem:</strong> How do you ask for a slot if you don't have a slot to transmit your request?</p>
-                            <p><strong>Solution: The Contention Interval.</strong> A small part of the frame is set aside for random access (e.g., Slotted ALOHA).</p>
+                    <div class="text-sm text-slate-600 space-y-3">
+                        <p>Consider a simple system where the Base Station (Basil) communicates with a user (Zoya). To manage different communication states, we use a <strong>2-bit Frame Header</strong> to indicate the frame type.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                                <strong class="text-slate-800 block mb-2 text-xs uppercase tracking-wider">Header Codes</strong>
+                                <ul class="space-y-2 text-xs font-mono">
+                                    <li><span class="bg-blue-100 px-1 rounded text-blue-800">00</span> : Link Establishment (Invite)</li>
+                                    <li><span class="bg-red-100 px-1 rounded text-red-800">01</span> : Link Termination (Bye)</li>
+                                    <li><span class="bg-green-100 px-1 rounded text-green-800">10</span> : Downlink Frame (Basil → Zoya)</li>
+                                    <li><span class="bg-orange-100 px-1 rounded text-orange-800">11</span> : Uplink Frame (Zoya → Basil)</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200 flex flex-col justify-center">
+                                <strong class="text-slate-800 block mb-2 text-xs uppercase tracking-wider">Visual Frame</strong>
+                                <div class="flex items-center">
+                                    <div class="w-12 h-10 bg-slate-800 text-white flex items-center justify-center rounded-l text-xs font-bold font-mono">10</div>
+                                    <div class="flex-grow h-10 bg-green-100 border-y border-r border-green-300 flex items-center justify-center text-green-800 text-xs rounded-r">
+                                        Data Payload (Downlink)
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2 text-center">Example: A Downlink Frame</p>
+                            </div>
                         </div>
-                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-                            <p class="font-semibold text-slate-700 mb-1">Steps:</p>
-                            <ol class="list-decimal pl-4 space-y-1">
-                                <li>BS broadcasts <strong>Frame Header</strong>.</li>
-                                <li>Users send <strong>Reservation Requests</strong> in contention slots (Risk of collision!).</li>
-                                <li>BS computes schedule & sends <strong>Allocation Packet</strong>.</li>
-                                <li>Users send <strong>Data</strong> in collision-free assigned slots.</li>
-                            </ol>
+
+                        <p><strong>The Scenario:</strong> Before data transmission can begin, Basil must "invite" Zoya using a special frame (Header <code>00</code>). If Zoya accepts, they switch to Uplink (<code>11</code>) or Downlink (<code>10</code>) frames. When finished, they terminate with <code>01</code>.</p>
+                        <p><strong>Limitation:</strong> This structure is still relatively rigid. The header only sets the <em>direction</em> or <em>state</em>, but doesn't dynamically allocate specific slots to different users within a single frame. For that, we need full <strong>Dynamic TDMA</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- NEW: Dynamic TDMA Deep Dive -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 transition hover:shadow-md md:col-span-2">
+                    <h3 class="font-bold text-[#005088] mb-3 text-lg flex items-center">
+                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">🚀</span>
+                        Dynamic TDMA: The Reservation Cycle
+                    </h3>
+                    <div class="text-sm text-slate-600 space-y-4">
+                        <p>To solve the static inefficiency, we switch to a <strong>Reservation-based</strong> protocol. This introduces a "conversation" before the data transmission.</p>
+                        
+                        <div class="border border-slate-200 rounded p-4 bg-slate-50 overflow-x-auto">
+                            <h4 class="font-bold text-slate-700 mb-3 text-xs uppercase tracking-wider">The Dynamic Frame Structure</h4>
+                            <div class="flex items-center space-x-1 min-w-max">
+                                <div class="flex-shrink-0 w-16 h-14 bg-gray-800 text-white text-xs flex flex-col items-center justify-center text-center rounded shadow-sm">
+                                    <span class="font-bold">Header</span>
+                                    <span class="text-[10px] opacity-70">Sync</span>
+                                </div>
+                                <div class="flex-shrink-0 w-32 h-14 bg-yellow-100 border-2 border-yellow-400 text-xs flex flex-col items-center justify-center rounded text-yellow-900 shadow-sm">
+                                    <span class="font-bold">Reservations ($r$)</span>
+                                    <span class="text-[10px]">Users ask for slots</span>
+                                </div>
+                                <div class="flex-shrink-0 w-28 h-14 bg-purple-100 border-2 border-purple-400 text-xs flex flex-col items-center justify-center rounded text-purple-900 shadow-sm">
+                                    <span class="font-bold">Allocation ($a$)</span>
+                                    <span class="text-[10px]">BS assigns schedule</span>
+                                </div>
+                                <div class="flex-shrink-0 w-20 h-14 bg-blue-100 border border-blue-400 text-xs flex items-center justify-center rounded text-blue-900 font-bold">Data (Alice)</div>
+                                <div class="flex-shrink-0 w-20 h-14 bg-blue-100 border border-blue-400 text-xs flex items-center justify-center rounded text-blue-900 font-bold">Data (Alice)</div>
+                                <div class="flex-shrink-0 w-20 h-14 bg-orange-100 border border-orange-400 text-xs flex items-center justify-center rounded text-orange-900 font-bold">Data (Charlie)</div>
+                            </div>
+                        </div>
+
+                        <ul class="list-disc pl-4 space-y-2">
+                            <li><strong>Phase 1: Header & Reservation ($T_H + T_r$):</strong> The Base Station opens the floor. Users send short packets saying "I need $N$ slots". (Bob sends nothing).</li>
+                            <li><strong>Phase 2: Allocation ($T_a$):</strong> The Base Station computes a schedule. It sees Bob is silent and Alice needs bandwidth. It assigns Bob's usual slot to Alice.</li>
+                            <li><strong>Phase 3: Data Transmission ($F \times T$):</strong> Alice sends data in Slot 1 AND Slot 2. Charlie uses Slot 3. <strong>100% Utilization!</strong></li>
+                        </ul>
+                        <div class="bg-blue-50 p-3 rounded text-xs border border-blue-200 flex items-start">
+                            <span class="text-lg mr-2">💡</span>
+                            <div>
+                                <strong>The Trade-off:</strong> We gain efficiency by utilizing empty slots, but we pay a cost. The time spent sending the Header, Reservations, and Allocation map reduces the raw throughput. This is the <em>Overhead</em> you calculated in Exercise 2.
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Interactive Simulation -->
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-8">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800">Simulation: The "Waste" Problem</h3>
-                        <p class="text-sm text-slate-500 mt-1">Adjust the sliders to see how Static TDMA loses efficiency compared to Dynamic TDMA when users are inactive.</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Controls -->
-                    <div class="bg-slate-50 p-4 rounded-lg space-y-6">
+                <!-- Simulation -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-8 md:col-span-2">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Users ($K$)</label>
-                            <input type="range" min="2" max="20" value="10" id="sim-users" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
-                            <div class="flex justify-between text-xs text-slate-500 mt-1">
-                                <span>2 Users</span>
-                                <span id="val-users" class="font-bold text-[#005088]">10</span>
-                                <span>20 Users</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active Users (%)</label>
-                            <input type="range" min="0" max="100" value="40" id="sim-activity" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
-                            <div class="flex justify-between text-xs text-slate-500 mt-1">
-                                <span>0%</span>
-                                <span id="val-activity" class="font-bold text-[#005088]">40%</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-                        <div class="text-xs text-slate-500 border-t pt-4 border-slate-200">
-                            <p class="mb-1"><strong class="text-red-600">Static Waste:</strong> Slots assigned to inactive users.</p>
-                            <p><strong class="text-yellow-600">Dynamic Overhead:</strong> Bits spent on Headers/Reservations (approx 10%).</p>
+                            <h3 class="text-lg font-bold text-slate-800">Visualizing Inefficiency</h3>
+                            <p class="text-sm text-slate-500 mt-1">Comparing waste (Static) vs Overhead (Dynamic)</p>
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Controls -->
+                        <div class="bg-slate-50 p-4 rounded-lg space-y-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Users ($K$)</label>
+                                <input type="range" min="2" max="20" value="10" id="sim-users" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
+                                <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                    <span>2</span>
+                                    <span id="val-users" class="font-bold text-[#005088]">10</span>
+                                    <span>20</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active Users (%)</label>
+                                <input type="range" min="0" max="100" value="40" id="sim-activity" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
+                                <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                    <span>0%</span>
+                                    <span id="val-activity" class="font-bold text-[#005088]">40%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Visualization -->
-                    <div class="lg:col-span-2 flex flex-col justify-center">
-                        <div class="chart-container">
-                            <canvas id="chart-comparison"></canvas>
+                        <!-- Visualization -->
+                        <div class="lg:col-span-2 flex flex-col justify-center">
+                            <div class="chart-container">
+                                <canvas id="chart-comparison"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -224,9 +289,38 @@
             <div class="max-w-4xl mx-auto">
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-slate-800">Exercise 1: Downlink Allocation</h2>
-                    <p class="text-slate-600 mt-2">
-                        <strong>Goal:</strong> Find the <em>Minimum Frame Length</em> (slots) to satisfy unequal rate requirements. 
-                        We need integer slots that perfectly divide into the required fractions.
+                </div>
+
+                <!-- Problem Statement -->
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg shadow-sm">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-1">Problem Statement</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Consider a downlink TDMA system with 3 users. Unequal time slot allocation is allowed. The base
+                                station transmits at a date rate of $R$ [bps]. If the average rates of $R/2$, $R/4$, and $R/6$ are required by
+                                the 3 users, what is the minimum frame length? Draw a feasible realization of the frame structure that
+                                can meet the requirement.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theory Block -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-slate-700">
+                    <h3 class="font-bold text-blue-800 mb-2">Theory & Logic: Why LCM?</h3>
+                    <p class="mb-2">
+                        In TDMA, a user's rate $R_{user}$ is determined by the fraction of slots they occupy in a repeating frame of length $F$.
+                    </p>
+                    <p class="mb-2 font-mono text-xs p-2 bg-white rounded">
+                        $R_{user} = R_{channel} \times \frac{N_{slots}}{F}$
+                    </p>
+                    <p class="mb-2">
+                        If a user requires $R_{channel}/x$, it implies $\frac{N_{slots}}{F} = \frac{1}{x}$, or $F = x \cdot N_{slots}$.
+                    </p>
+                    <p>
+                        This means the frame length $F$ <strong>must be divisible</strong> by the denominator $x$ for the user to get an integer number of slots. To satisfy multiple users with denominators $d_1, d_2, d_3$, $F$ must be divisible by all of them. The smallest such $F$ is the <strong>Least Common Multiple (LCM)</strong>.
                     </p>
                 </div>
 
@@ -294,16 +388,88 @@
             <div class="max-w-4xl mx-auto">
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-slate-800">Exercise 2: Uplink Efficiency</h2>
-                    <p class="text-slate-600 mt-2">
-                        <strong>Goal:</strong> Calculate the overhead ($r, a$) and final efficiency.
-                        <br>Formula: $\text{Rate} = \frac{\text{Payload Bits}}{\text{Overhead Time} + \text{Payload Time}}$
-                    </p>
+                </div>
+
+                <!-- Problem Statement -->
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg shadow-sm">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-1">Problem Statement</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-2">
+                                Consider an uplink TDMA system with 20 devices. The devices are allowed to reserve resources with
+                                variable number of data slots. Assume that each device can request up to 10 data slots through the
+                                reservation packets.
+                            </p>
+                            <ul class="list-decimal pl-5 text-sm text-slate-600 leading-relaxed">
+                                <li>(a) Find the number of bits that are required in the reservation packets and the allocation packet.</li>
+                                <li>(b) Assume that all devices transmit at a data rate of 100bps, the duration of each time slot is 10s and the frame header is 2-bit long. Calculate the average sum rate when the frame length is maximal.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theory & Solution Derivation Block -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-slate-700">
+                    <h3 class="font-bold text-blue-800 mb-3 text-base">Theory & Solution Derivation</h3>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold text-slate-800 text-sm mb-2 border-b border-blue-200 pb-1">Part (a): Overhead Bits Calculation</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="font-semibold text-slate-900 mb-1">1. Reservation Packets ($r$)</p>
+                                <p class="mb-2">Each user requests $0 \dots 10$ slots.</p>
+                                <ul class="list-disc pl-4 text-xs space-y-1 mb-2">
+                                    <li>There are $10 + 1 = 11$ possible values (including 0).</li>
+                                    <li>Bits per user = $\lceil \log_2(11) \rceil = 4$ bits.</li>
+                                    <li>Total for 20 users: $r = 4 \times 20 = 80$ bits.</li>
+                                </ul>
+                                <!-- <div class="bg-amber-100 p-2 rounded text-xs border border-amber-200">
+                                    <strong>Critical Adaptation:</strong> Lecture Slide 56 uses $\lceil \log_2(F+1) \rceil$. Here, we replace $F$ with 10 because the problem limits requests to 10 slots max, even though the frame is larger.
+                                </div> -->
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900 mb-1">2. Allocation Packet ($a$)</p>
+                                <p class="mb-2">The Base Station assigns every slot in the frame ($F_{max}$) to a user.</p>
+                                <ul class="list-disc pl-4 text-xs space-y-1">
+                                    <li>Max Frame Length $F_{max} = 20 \text{ users} \times 10 \text{ slots} = 200$.</li>
+                                    <li>To identify 1 of 20 users, we need $\lceil \log_2(20) \rceil = 5$ bits.</li>
+                                    <li>Total bits: $a = 5 \text{ bits/slot} \times 200 \text{ slots} = 1000$ bits.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-2 border-b border-blue-200 pb-1">Part (b): Average Sum Rate Calculation</h4>
+                        <p class="mb-2">The generic efficiency formula from Lecture 1 (Slide 56) is:</p>
+                        <p class="font-mono text-center bg-white p-2 rounded border border-slate-200 mb-3 text-xs">
+                            $\overline{R}_{max} = \frac{F_{max} \cdot R}{\frac{2+r+a}{D} + F_{max}}$
+                        </p>
+                        <ul class="list-decimal pl-5 space-y-2 text-xs">
+                            <li>
+                                <strong>Payload (Numerator):</strong> The useful data rate is effectively the channel rate $R$ utilized during the $F_{max}$ data slots.
+                                <br>Numerator $= F_{max} \cdot R = 200 \cdot 100 = 20,000$.
+                            </li>
+                            <li>
+                                <strong>Total Time (Denominator):</strong> Normalized to slots.
+                                <ul class="list-disc pl-4 mt-1 text-slate-500">
+                                    <li>Bits per slot $D = R \times T = 100 \times 10 = 1000$ bits.</li>
+                                    <li>Overhead in slots = $\frac{2 (\text{Header}) + 80 (r) + 1000 (a)}{1000} = \frac{1082}{1000} = 1.082$ slots.</li>
+                                    <li>Total Frame Duration = $1.082 + 200 = 201.082$ slots.</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Final Calculation:</strong> $\frac{20,000}{201.082} \approx 99.46$ bps.
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Parameters Form -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-bold text-[#005088] mb-4">System Parameters</h3>
+                        <h3 class="text-lg font-bold text-[#005088] mb-4">Interactive Calculator</h3>
                         <div class="grid grid-cols-1 gap-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -330,7 +496,7 @@
                                 <input type="number" id="ex2-header" value="2" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
                             </div>
                             <button onclick="calculateEfficiency()" class="w-full bg-[#005088] text-white py-2 px-4 rounded-lg hover:bg-[#003d66] transition-colors mt-2 font-medium">
-                                Analyze Overhead
+                                Calculate Results
                             </button>
                         </div>
                     </div>
@@ -339,7 +505,7 @@
                     <div class="flex flex-col space-y-6">
                         <!-- Detailed Stats Breakdown -->
                         <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                             <h4 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-2">Math Breakdown</h4>
+                             <h4 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-2">Live Math Breakdown</h4>
                              <div class="text-sm font-mono text-slate-600 space-y-2 overflow-y-auto max-h-48 pr-2" id="ex2-details">
                                  <p class="italic text-slate-400">Run analysis to see calculations.</p>
                              </div>
@@ -358,23 +524,56 @@
             </div>
         </section>
 
-        <!-- Section 4: Exercise 5 (New) -->
+        <!-- Section 4: Exercise 3 -->
         <section id="content-ex5" class="hidden space-y-8 animate-fade-in">
             <div class="max-w-4xl mx-auto">
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Exercise 5: Dynamic Constraints</h2>
-                    <p class="text-slate-600 mt-2">
-                        <strong>Goal:</strong> Determine system bounds ($K$ and $F$) based on metadata sizes, and calculate overhead for variable frame lengths.
+                    <h2 class="text-2xl font-bold text-slate-800">Exercise 3: Dynamic Constraints</h2>
+                </div>
+
+                <!-- Problem Statement -->
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg shadow-sm">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-1">Problem Statement</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-2">
+                                Consider a dynamic TDMA system with $K$ devices, which are allowed to reserve resources in the uplink. All devices transmit at a data rate of $R$.
+                            </p>
+                            <ul class="list-disc pl-5 text-sm text-slate-600 leading-relaxed">
+                                <li>(a) Each frame contains $F$ data slots. If the number of bits in the allocation packet is $5F$, determine the range of $K$.</li>
+                                <li>(b) Each frame contains $F$ data slots. Assume that $F$ is an even number and each device can reserve up to $F/2$ data slots. If the total number of bits in the reservation packets of all devices is $4K$, determine the range of $F$.</li>
+                                <li>(c) Now the system wants to adopt a TDMA scheme with variable number of data slots being equal to the total number of reserved slots at the beginning of each frame. To realize this, what new field of metadata should be added? If each device is allowed to reserve up to 10 slots, how many new metadata bits should be added? Assume such new metadata bits are added to the allocation packet, what is the maximum number of bits in the allocation packet?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theory Block -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-sm text-slate-700">
+                    <h3 class="font-bold text-blue-800 mb-2">Theory & Logic: Balancing Equation</h3>
+                    <p class="mb-2">
+                        These problems are about balancing <strong>Available Bits</strong> vs <strong>Required Information</strong>.
                     </p>
+                    <ul class="list-disc pl-4 text-xs space-y-2">
+                        <li>
+                            <strong>Part A (Finding K):</strong> We are given the size of the Allocation Packet as $M \times F$.
+                            <br>Since the packet contains $F$ entries (one per slot), each entry has $M$ bits.
+                            <br>To address $K$ users, we need $\lceil \log_2 K \rceil$ bits.
+                            <br>So, $\lceil \log_2 K \rceil = M$.
+                        </li>
+                        <li>
+                            <strong>Part B (Finding F):</strong> We are given the total size of Reservation Packets as $N \times K$.
+                            <br>Since there are $K$ users, each user sends $N$ bits.
+                            <br>Each user requests up to $F/2$ slots. This value range requires $\lceil \log_2(F/2 + 1) \rceil$ bits.
+                            <br>So, $\lceil \log_2(F/2 + 1) \rceil = N$.
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- Part A: Determine K -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
                     <h3 class="text-lg font-bold text-[#005088] mb-3">Part (a): Range of Users ($K$)</h3>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Given: The allocation packet size is <strong>$M \times F$</strong> bits. Each slot requires $\lceil \log_2 K \rceil$ bits.
-                        Find the range of $K$.
-                    </p>
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-1/3">
                             <label class="block text-xs font-bold text-slate-500">Multiplier M (Bits/Slot)</label>
@@ -390,10 +589,6 @@
                 <!-- Part B: Determine F -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
                     <h3 class="text-lg font-bold text-[#005088] mb-3">Part (b): Range of Frame Size ($F$)</h3>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Given: Total reservation bits = <strong>$N \times K$</strong>. Max request per user is $F/2$. $F$ is even.
-                        Find range of $F$.
-                    </p>
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-1/3">
                             <label class="block text-xs font-bold text-slate-500">Multiplier N (Bits/User)</label>
@@ -406,12 +601,15 @@
                     </div>
                 </div>
 
-                <!-- Part C: Metadata -->
+                <!-- Part C: Metadata Explanation & Calc -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 class="text-lg font-bold text-[#005088] mb-3">Part (c): Variable Frame Header</h3>
-                    <p class="text-sm text-slate-500 mb-4">
-                        System changes: Frame length is variable (Sum of requests). What is the new overhead?
-                    </p>
+                    
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-3 mb-4 text-sm text-slate-700">
+                        <strong>Logic for Part (c):</strong><br>
+                        Since the Frame Length $F$ is now variable (depending on user requests), the receivers do not know when the frame ends. We must add a <strong>New Metadata Field</strong> to announce the total number of data slots in the current frame.
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500">Users ($K$)</label>
@@ -657,34 +855,47 @@
             const totalTimeSlots = overheadSlots + Fmax;
             
             const efficiency = (Fmax / totalTimeSlots) * 100;
+            // Also calc raw data rate for display
+            // Rate R is derived from D and T? Or given?
+            // Formula in question uses R explicitly.
+            // Rate = (Fmax * R) / (OverheadTime + Fmax)
+            // Wait, formula in question: R_max = (Fmax * R) / ( (2+r+a)/D + Fmax )
+            // My code used efficiency percentage. Let's assume R=100bps for the display text logic to match solution number.
+            // Actually, let's just calculate the Mbps value if we assume R=100 from inputs (user can't change R, only D? No, input D).
+            // Let's deduce R from D if needed, but the formula uses R.
+            // D = R * T => R = D/T. Let's assume T=10s fixed as per problem for the calculation display.
+            const T_slot = 10; 
+            const R_calc = D / T_slot; 
+            
+            const rateBps = (Fmax * R_calc) / (overheadSlots + Fmax);
 
             // Detailed Breakdown HTML
             const detailsHtml = `
                 <div class="mb-2">
                     <strong>1. Reservation Bits ($r$):</strong><br>
-                    Need to represent 0-${MaxReq} (${MaxReq+1} values).<br>
+                    Request range 0-${MaxReq} (${MaxReq+1} options).<br>
                     $\\lceil \\log_2(${MaxReq+1}) \\rceil = ${bitsPerUser}$ bits/user.<br>
                     Total $r = ${bitsPerUser} \\times ${K} = \\mathbf{${r}}$ bits.
                 </div>
                 <div class="mb-2">
                     <strong>2. Allocation Bits ($a$):</strong><br>
-                    Identify 1 of ${K} users per slot.<br>
+                    Assign ${Fmax} slots to ${K} users.<br>
                     $\\lceil \\log_2(${K}) \\rceil = ${bitsPerSlotID}$ bits/slot.<br>
                     Total $a = ${bitsPerSlotID} \\times ${Fmax} = \\mathbf{${a}}$ bits.
                 </div>
                 <div class="mb-2">
                     <strong>3. Overhead Duration:</strong><br>
-                    Total Overhead = ${Header} (H) + ${r} (r) + ${a} (a) = ${overheadBits} bits.<br>
-                    Time = ${overheadBits} / ${D} = <strong>${overheadSlots.toFixed(3)}</strong> slots.
+                    Total Overhead = ${Header} + ${r} + ${a} = ${overheadBits} bits.<br>
+                    Time = ${overheadBits} / ${D} (bits/slot) = <strong>${overheadSlots.toFixed(3)}</strong> slots.
                 </div>
                 <div class="border-t pt-1">
-                    <strong>4. Throughput:</strong><br>
-                    ${Fmax} / (${overheadSlots.toFixed(3)} + ${Fmax}) = <strong>${efficiency.toFixed(2)}%</strong>
+                    <strong>4. Throughput (Assuming $R=${R_calc}$ bps):</strong><br>
+                    $\\frac{${Fmax} \\times ${R_calc}}{${overheadSlots.toFixed(3)} + ${Fmax}} = \\mathbf{${rateBps.toFixed(4)}}$ bps
                 </div>
             `;
             
             document.getElementById('ex2-details').innerHTML = detailsHtml;
-            document.getElementById('res-eff').innerText = efficiency.toFixed(2) + '%';
+            document.getElementById('res-eff').innerText = rateBps.toFixed(2) + ' bps';
             
             // Re-render MathJax if loaded (simplified handling here)
             if (window.MathJax) {
@@ -793,7 +1004,7 @@
         // Init
         window.onload = () => {
             updateComparisonChart();
-            // Pre-calculate Q5 defaults
+            // Pre-calculate defaults
             calcEx5a();
             calcEx5b();
             calcEx5c();
