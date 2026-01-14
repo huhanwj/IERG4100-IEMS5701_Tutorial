@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IERG4100: Shared Wireless Medium & TDMA Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    
+    <!-- MathJax Configuration: Must be before loading MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #005088;
+            color: #005088;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #64748b;
+        }
+        .tab-inactive:hover {
+            color: #334155;
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Deep Blue -->
+</head>
+<body class="bg-[#fdfbf7] text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-[#005088]">IERG4100 Tutorial 1</h1>
+                <p class="text-sm text-slate-500">Shared Wireless Medium & TDMA Interactive Review</p>
+            </div>
+            <div class="hidden sm:block text-xs text-slate-400">
+                Updated: Added Q5 Dynamic Constraints
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full overflow-x-auto">
+        <div class="flex space-x-8 border-b border-slate-200 min-w-max" id="nav-tabs">
+            <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-active pb-4 px-1 text-sm font-medium transition-colors">
+                Core Concepts
+            </button>
+            <button onclick="switchTab('ex1')" id="tab-ex1" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">
+                Q1: Downlink Frame
+            </button>
+            <button onclick="switchTab('ex2')" id="tab-ex2" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">
+                Q2: Uplink Efficiency
+            </button>
+            <button onclick="switchTab('ex5')" id="tab-ex5" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">
+                Q5: System Limits
+            </button>
+        </div>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- Section 1: Core Concepts -->
+        <section id="content-concepts" class="space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">The Shared Wireless Medium</h2>
+                <p class="text-slate-600">
+                    Wireless networks differ fundamentally from wired ones. The medium is broadcast (everyone hears everyone), half-duplex (cannot listen while talking), and subject to destructive collisions. TDMA (Time Division Multiple Access) is a key technique to manage this chaos.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <!-- Concept Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 transition hover:shadow-md">
+                    <h3 class="font-bold text-[#005088] mb-3 text-lg flex items-center">
+                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">📡</span>
+                        The Collision Model
+                    </h3>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start">
+                            <span class="mr-2 text-red-500 font-bold">•</span>
+                            <span><strong>Slotted Time:</strong> Transmissions sync to a clock tick ($T$). This reduces the "vulnerable period" for collisions by half compared to unslotted systems.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2 text-red-500 font-bold">•</span>
+                            <span><strong>Destructive:</strong> If 2+ packets overlap, 100% data loss. We assume no "capture effect" (stronger signal winning).</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Concept Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 transition hover:shadow-md">
+                    <h3 class="font-bold text-[#005088] mb-3 text-lg flex items-center">
+                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">⚡</span>
+                        Static vs. Dynamic TDMA
+                    </h3>
+                    <div class="text-sm text-slate-600 space-y-2">
+                        <p><strong class="text-slate-800">Static:</strong> Pre-assigned slots (Round Robin). <br><em>Pro:</em> Simple, fair. <br><em>Con:</em> Wasteful if users are silent; scales poorly.</p>
+                        <p><strong class="text-slate-800">Dynamic:</strong> Allocates slots per frame based on demand. <br><em>Pro:</em> High efficiency for bursty traffic. <br><em>Con:</em> Overhead (Headers & Requests).</p>
+                    </div>
+                </div>
+
+                <!-- Concept Card 3: Link Establishment -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 md:col-span-2 transition hover:shadow-md">
+                    <h3 class="font-bold text-[#005088] mb-3 text-lg flex items-center">
+                        <span class="bg-blue-100 p-1.5 rounded mr-2 text-sm">🔗</span>
+                        Link Establishment (The "Chicken & Egg" Problem)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
+                        <div>
+                            <p class="mb-2"><strong>Problem:</strong> How do you ask for a slot if you don't have a slot to transmit your request?</p>
+                            <p><strong>Solution: The Contention Interval.</strong> A small part of the frame is set aside for random access (e.g., Slotted ALOHA).</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <p class="font-semibold text-slate-700 mb-1">Steps:</p>
+                            <ol class="list-decimal pl-4 space-y-1">
+                                <li>BS broadcasts <strong>Frame Header</strong>.</li>
+                                <li>Users send <strong>Reservation Requests</strong> in contention slots (Risk of collision!).</li>
+                                <li>BS computes schedule & sends <strong>Allocation Packet</strong>.</li>
+                                <li>Users send <strong>Data</strong> in collision-free assigned slots.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Simulation -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Simulation: The "Waste" Problem</h3>
+                        <p class="text-sm text-slate-500 mt-1">Adjust the sliders to see how Static TDMA loses efficiency compared to Dynamic TDMA when users are inactive.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Controls -->
+                    <div class="bg-slate-50 p-4 rounded-lg space-y-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Users ($K$)</label>
+                            <input type="range" min="2" max="20" value="10" id="sim-users" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
+                            <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                <span>2 Users</span>
+                                <span id="val-users" class="font-bold text-[#005088]">10</span>
+                                <span>20 Users</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Active Users (%)</label>
+                            <input type="range" min="0" max="100" value="40" id="sim-activity" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005088]">
+                            <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                <span>0%</span>
+                                <span id="val-activity" class="font-bold text-[#005088]">40%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500 border-t pt-4 border-slate-200">
+                            <p class="mb-1"><strong class="text-red-600">Static Waste:</strong> Slots assigned to inactive users.</p>
+                            <p><strong class="text-yellow-600">Dynamic Overhead:</strong> Bits spent on Headers/Reservations (approx 10%).</p>
+                        </div>
+                    </div>
+
+                    <!-- Visualization -->
+                    <div class="lg:col-span-2 flex flex-col justify-center">
+                        <div class="chart-container">
+                            <canvas id="chart-comparison"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Exercise 1 -->
+        <section id="content-ex1" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Exercise 1: Downlink Allocation</h2>
+                    <p class="text-slate-600 mt-2">
+                        <strong>Goal:</strong> Find the <em>Minimum Frame Length</em> (slots) to satisfy unequal rate requirements. 
+                        We need integer slots that perfectly divide into the required fractions.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Calculator Input -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
+                        <h3 class="text-lg font-bold text-[#005088] mb-4">Rate Inputs</h3>
+                        <p class="text-xs text-slate-500 mb-4">Enter denominators for required rates (e.g., enter '2' for $R/2$).</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">User 1 Rate ($R/x$)</label>
+                                <div class="flex items-center mt-1">
+                                    <span class="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-300">1 /</span>
+                                    <input type="number" id="ex1-u1" value="2" min="1" max="20" class="w-full p-2 border border-slate-300 rounded-r-md focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">User 2 Rate ($R/x$)</label>
+                                <div class="flex items-center mt-1">
+                                    <span class="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-300">1 /</span>
+                                    <input type="number" id="ex1-u2" value="4" min="1" max="20" class="w-full p-2 border border-slate-300 rounded-r-md focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">User 3 Rate ($R/x$)</label>
+                                <div class="flex items-center mt-1">
+                                    <span class="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-300">1 /</span>
+                                    <input type="number" id="ex1-u3" value="6" min="1" max="20" class="w-full p-2 border border-slate-300 rounded-r-md focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                            </div>
+                            <button onclick="calculateLCM()" class="w-full bg-[#005088] text-white py-2 px-4 rounded-lg hover:bg-[#003d66] transition-colors mt-4 font-medium">
+                                Calculate & Explain
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results & Viz -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Math Display -->
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-3">Step-by-Step Derivation</h4>
+                            <div class="font-mono text-sm space-y-3 text-slate-700" id="ex1-results">
+                                <p class="text-slate-500 italic">Click "Calculate" to see the logic.</p>
+                            </div>
+                        </div>
+
+                        <!-- Visualizer -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-slate-700 text-sm mb-4 text-center">Visual Frame Structure</h4>
+                            <div class="chart-container h-48">
+                                <canvas id="chart-frame"></canvas>
+                            </div>
+                            <div class="text-center mt-2 text-xs text-slate-500">
+                                This bar represents one complete frame period ($T_{frame}$).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Exercise 2 -->
+        <section id="content-ex2" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Exercise 2: Uplink Efficiency</h2>
+                    <p class="text-slate-600 mt-2">
+                        <strong>Goal:</strong> Calculate the overhead ($r, a$) and final efficiency.
+                        <br>Formula: $\text{Rate} = \frac{\text{Payload Bits}}{\text{Overhead Time} + \text{Payload Time}}$
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Parameters Form -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-[#005088] mb-4">System Parameters</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500">Users ($K$)</label>
+                                    <input type="number" id="ex2-users" value="20" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500">Max Req Slots</label>
+                                    <input type="number" id="ex2-req" value="10" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500">Frame Data Slots ($F_{max}$)</label>
+                                    <input type="number" id="ex2-slots" value="200" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500">Bits per Slot ($D$)</label>
+                                    <input type="number" id="ex2-d" value="1000" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500">Fixed Header Bits</label>
+                                <input type="number" id="ex2-header" value="2" class="mt-1 w-full p-2 border rounded text-sm focus:ring-[#005088] focus:border-[#005088]">
+                            </div>
+                            <button onclick="calculateEfficiency()" class="w-full bg-[#005088] text-white py-2 px-4 rounded-lg hover:bg-[#003d66] transition-colors mt-2 font-medium">
+                                Analyze Overhead
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Output Viz -->
+                    <div class="flex flex-col space-y-6">
+                        <!-- Detailed Stats Breakdown -->
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                             <h4 class="font-bold text-slate-700 text-sm uppercase tracking-wide mb-2">Math Breakdown</h4>
+                             <div class="text-sm font-mono text-slate-600 space-y-2 overflow-y-auto max-h-48 pr-2" id="ex2-details">
+                                 <p class="italic text-slate-400">Run analysis to see calculations.</p>
+                             </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex-grow flex flex-col items-center justify-center">
+                            <h4 class="font-bold text-slate-700 text-sm mb-2">Time Composition (Efficiency)</h4>
+                            <div class="chart-container h-48">
+                                <canvas id="chart-efficiency"></canvas>
+                            </div>
+                             <div class="text-2xl font-bold text-green-600 mt-2" id="res-eff">--%</div>
+                             <div class="text-xs text-slate-400">Effective Throughput Ratio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Exercise 5 (New) -->
+        <section id="content-ex5" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Exercise 5: Dynamic Constraints</h2>
+                    <p class="text-slate-600 mt-2">
+                        <strong>Goal:</strong> Determine system bounds ($K$ and $F$) based on metadata sizes, and calculate overhead for variable frame lengths.
+                    </p>
+                </div>
+
+                <!-- Part A: Determine K -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+                    <h3 class="text-lg font-bold text-[#005088] mb-3">Part (a): Range of Users ($K$)</h3>
+                    <p class="text-sm text-slate-500 mb-4">
+                        Given: The allocation packet size is <strong>$M \times F$</strong> bits. Each slot requires $\lceil \log_2 K \rceil$ bits.
+                        Find the range of $K$.
+                    </p>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-1/3">
+                            <label class="block text-xs font-bold text-slate-500">Multiplier M (Bits/Slot)</label>
+                            <input type="number" id="ex5-m" value="5" min="1" max="10" class="mt-1 w-full p-2 border rounded text-sm">
+                        </div>
+                        <button onclick="calcEx5a()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Calculate Range</button>
+                    </div>
+                    <div id="res-ex5a" class="bg-slate-50 p-3 rounded font-mono text-sm text-slate-700 border border-slate-200">
+                        Result will appear here...
+                    </div>
+                </div>
+
+                <!-- Part B: Determine F -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+                    <h3 class="text-lg font-bold text-[#005088] mb-3">Part (b): Range of Frame Size ($F$)</h3>
+                    <p class="text-sm text-slate-500 mb-4">
+                        Given: Total reservation bits = <strong>$N \times K$</strong>. Max request per user is $F/2$. $F$ is even.
+                        Find range of $F$.
+                    </p>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-1/3">
+                            <label class="block text-xs font-bold text-slate-500">Multiplier N (Bits/User)</label>
+                            <input type="number" id="ex5-n" value="4" min="1" max="10" class="mt-1 w-full p-2 border rounded text-sm">
+                        </div>
+                        <button onclick="calcEx5b()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Calculate Range</button>
+                    </div>
+                    <div id="res-ex5b" class="bg-slate-50 p-3 rounded font-mono text-sm text-slate-700 border border-slate-200">
+                        Result will appear here...
+                    </div>
+                </div>
+
+                <!-- Part C: Metadata -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold text-[#005088] mb-3">Part (c): Variable Frame Header</h3>
+                    <p class="text-sm text-slate-500 mb-4">
+                        System changes: Frame length is variable (Sum of requests). What is the new overhead?
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500">Users ($K$)</label>
+                            <input type="number" id="ex5-k" value="20" class="mt-1 w-full p-2 border rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500">Max Req per User</label>
+                            <input type="number" id="ex5-req" value="10" class="mt-1 w-full p-2 border rounded text-sm">
+                        </div>
+                    </div>
+                    <button onclick="calcEx5c()" class="w-full bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 mb-4">Calculate Metadata Overhead</button>
+                    
+                    <div id="res-ex5c" class="bg-slate-50 p-3 rounded font-mono text-sm text-slate-700 border border-slate-200 space-y-2">
+                        <p class="italic">Run calculation...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+            <p>IERG4100 Tutorial Interactive Companion</p>
+            <p class="text-xs mt-1 text-slate-500">Based on Lecture 1 Review & In-Class Exercises</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#nav-tabs button').forEach(el => {
+                el.classList.remove('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+                el.classList.add('tab-inactive', 'text-slate-500');
+            });
+
+            // Show selected section
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('tab-inactive', 'text-slate-500');
+            activeBtn.classList.add('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+
+            // Trigger chart updates in case of resize issues while hidden
+            if (tabId === 'concepts') updateComparisonChart();
+            if (tabId === 'ex1') calculateLCM();
+            if (tabId === 'ex2') calculateEfficiency();
+        }
+
+        // --- Chart Objects ---
+        let comparisonChart = null;
+        let frameChart = null;
+        let efficiencyChart = null;
+
+        // --- Concept Simulation Logic ---
+        const userSlider = document.getElementById('sim-users');
+        const activitySlider = document.getElementById('sim-activity');
+        
+        userSlider.addEventListener('input', updateComparisonChart);
+        activitySlider.addEventListener('input', updateComparisonChart);
+
+        function updateComparisonChart() {
+            const users = parseInt(userSlider.value);
+            const activePct = parseInt(activitySlider.value);
+            const activeUsers = Math.max(1, Math.round(users * (activePct / 100)));
+            
+            document.getElementById('val-users').innerText = users;
+            document.getElementById('val-activity').innerText = activePct + '%';
+
+            // Data Logic
+            const staticUsed = activeUsers;
+            const staticWaste = users - activeUsers;
+
+            const dynamicUsed = activeUsers;
+            const dynamicOverhead = Math.ceil(activeUsers * 0.1) + 1; // Simplified overhead visualization
+
+            const ctx = document.getElementById('chart-comparison').getContext('2d');
+            
+            if (comparisonChart) comparisonChart.destroy();
+
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Static TDMA', 'Dynamic TDMA'],
+                    datasets: [
+                        {
+                            label: 'Useful Data',
+                            data: [staticUsed, dynamicUsed],
+                            backgroundColor: '#005088',
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Wasted Slots',
+                            data: [staticWaste, 0],
+                            backgroundColor: '#cbd5e1',
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Overhead',
+                            data: [0, dynamicOverhead],
+                            backgroundColor: '#eab308',
+                            stack: 'Stack 0',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.dataset.label}: ${context.raw} slots`
+                            }
+                        },
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Slot Utilization Comparison' }
+                    },
+                    scales: {
+                        y: { 
+                            title: { display: true, text: 'Number of Slots' },
+                            suggestedMax: 22 
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Exercise 1: LCM & Frame Logic ---
+        function gcd(a, b) { return !b ? a : gcd(b, a % b); }
+        function lcm(a, b) { return (a * b) / gcd(a, b); }
+
+        function calculateLCM() {
+            const d1 = parseInt(document.getElementById('ex1-u1').value);
+            const d2 = parseInt(document.getElementById('ex1-u2').value);
+            const d3 = parseInt(document.getElementById('ex1-u3').value);
+
+            // Calculate LCM
+            const resultLCM = lcm(d1, lcm(d2, d3));
+
+            // Calculate slots per user
+            const slots1 = resultLCM / d1;
+            const slots2 = resultLCM / d2;
+            const slots3 = resultLCM / d3;
+            const totalUsed = slots1 + slots2 + slots3;
+            const padding = resultLCM - totalUsed;
+
+            // Generate Explanation
+            let paddingHtml = '';
+            if (padding < 0) {
+                paddingHtml = `<span class="text-red-600 font-bold">Sum > 1. Impossible! (${totalUsed}/${resultLCM})</span>`;
+            } else if (padding > 0) {
+                paddingHtml = `<span class="text-slate-600">Leftover: ${padding} slots (Padding/Signaling)</span>`;
+            } else {
+                paddingHtml = `<span class="text-green-600 font-bold">Perfect Fit! (0 idle)</span>`;
+            }
+
+            const html = `
+                <div class="border-l-4 border-[#005088] pl-3 py-1 bg-slate-50">
+                    <strong>Step 1: Find Denominators</strong><br>
+                    Requires rates: 1/${d1}, 1/${d2}, 1/${d3}
+                </div>
+                <div class="border-l-4 border-[#005088] pl-3 py-1 bg-slate-50">
+                    <strong>Step 2: Calculate LCM</strong><br>
+                    Smallest number divisible by ${d1}, ${d2}, ${d3} is <strong>${resultLCM}</strong>.
+                    <br><span class="text-xs text-slate-500">So, Frame Length = ${resultLCM} slots.</span>
+                </div>
+                <div class="border-l-4 border-[#005088] pl-3 py-1 bg-slate-50">
+                    <strong>Step 3: Allocations</strong><br>
+                    User 1: ${resultLCM} / ${d1} = <strong>${slots1}</strong> slots<br>
+                    User 2: ${resultLCM} / ${d2} = <strong>${slots2}</strong> slots<br>
+                    User 3: ${resultLCM} / ${d3} = <strong>${slots3}</strong> slots
+                </div>
+                <div class="border-t border-slate-300 pt-2 mt-2">
+                    Total Used: ${totalUsed} slots.<br>
+                    ${paddingHtml}
+                </div>
+            `;
+            document.getElementById('ex1-results').innerHTML = html;
+
+            // Update Chart
+            const ctx = document.getElementById('chart-frame').getContext('2d');
+            if (frameChart) frameChart.destroy();
+
+            const dataConfig = {
+                labels: ['Frame Allocation'],
+                datasets: [
+                    { label: 'User 1', data: [slots1], backgroundColor: '#005088' },
+                    { label: 'User 2', data: [slots2], backgroundColor: '#3b82f6' },
+                    { label: 'User 3', data: [slots3], backgroundColor: '#93c5fd' },
+                    { label: 'Idle', data: [Math.max(0, padding)], backgroundColor: '#e2e8f0' }
+                ]
+            };
+
+            frameChart = new Chart(ctx, {
+                type: 'bar',
+                data: dataConfig,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, max: Math.max(resultLCM, totalUsed) },
+                        y: { stacked: true }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} slots`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Exercise 2: Uplink Efficiency Logic ---
+        function calculateEfficiency() {
+            const K = parseInt(document.getElementById('ex2-users').value);
+            const MaxReq = parseInt(document.getElementById('ex2-req').value);
+            const Fmax = parseInt(document.getElementById('ex2-slots').value);
+            const D = parseInt(document.getElementById('ex2-d').value);
+            const Header = parseInt(document.getElementById('ex2-header').value);
+
+            // Calc r (Reservation Bits)
+            // bits per user = ceil(log2(MaxReq + 1)) (0 to MaxReq)
+            // Example: 0-10 is 11 values. log2(11) = 3.45 -> 4 bits.
+            const bitsPerUser = Math.ceil(Math.log2(MaxReq + 1));
+            const r = bitsPerUser * K;
+
+            // Calc a (Allocation Bits)
+            // bits per slot = ceil(log2(K)) -- identifying which user owns the slot
+            const bitsPerSlotID = K > 1 ? Math.ceil(Math.log2(K)) : 1; 
+            const a = bitsPerSlotID * Fmax;
+
+            // Overhead in Slots
+            const overheadBits = Header + r + a;
+            const overheadSlots = overheadBits / D;
+
+            // Total Time in Slots
+            const totalTimeSlots = overheadSlots + Fmax;
+            
+            const efficiency = (Fmax / totalTimeSlots) * 100;
+
+            // Detailed Breakdown HTML
+            const detailsHtml = `
+                <div class="mb-2">
+                    <strong>1. Reservation Bits ($r$):</strong><br>
+                    Need to represent 0-${MaxReq} (${MaxReq+1} values).<br>
+                    $\\lceil \\log_2(${MaxReq+1}) \\rceil = ${bitsPerUser}$ bits/user.<br>
+                    Total $r = ${bitsPerUser} \\times ${K} = \\mathbf{${r}}$ bits.
+                </div>
+                <div class="mb-2">
+                    <strong>2. Allocation Bits ($a$):</strong><br>
+                    Identify 1 of ${K} users per slot.<br>
+                    $\\lceil \\log_2(${K}) \\rceil = ${bitsPerSlotID}$ bits/slot.<br>
+                    Total $a = ${bitsPerSlotID} \\times ${Fmax} = \\mathbf{${a}}$ bits.
+                </div>
+                <div class="mb-2">
+                    <strong>3. Overhead Duration:</strong><br>
+                    Total Overhead = ${Header} (H) + ${r} (r) + ${a} (a) = ${overheadBits} bits.<br>
+                    Time = ${overheadBits} / ${D} = <strong>${overheadSlots.toFixed(3)}</strong> slots.
+                </div>
+                <div class="border-t pt-1">
+                    <strong>4. Throughput:</strong><br>
+                    ${Fmax} / (${overheadSlots.toFixed(3)} + ${Fmax}) = <strong>${efficiency.toFixed(2)}%</strong>
+                </div>
+            `;
+            
+            document.getElementById('ex2-details').innerHTML = detailsHtml;
+            document.getElementById('res-eff').innerText = efficiency.toFixed(2) + '%';
+            
+            // Re-render MathJax if loaded (simplified handling here)
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+
+            // Chart
+            const ctx = document.getElementById('chart-efficiency').getContext('2d');
+            if (efficiencyChart) efficiencyChart.destroy();
+
+            efficiencyChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Payload Data', 'Overhead Time'],
+                    datasets: [{
+                        data: [Fmax, overheadSlots],
+                        backgroundColor: ['#005088', '#eab308'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: false }
+                    }
+                }
+            });
+        }
+
+        // --- Exercise 5: Dynamic Constraints Logic ---
+        
+        function calcEx5a() {
+            // Formula: F * ceil(log2(K)) = M * F  => ceil(log2(K)) = M
+            // Range: 2^(M-1) < K <= 2^M
+            const M = parseInt(document.getElementById('ex5-m').value);
+            const lower = Math.pow(2, M - 1) + 1;
+            const upper = Math.pow(2, M);
+            
+            const html = `
+                <p>Equation: $F \\lceil \\log_2 K \\rceil = ${M}F$</p>
+                <p>Simplify: $\\lceil \\log_2 K \\rceil = ${M}$</p>
+                <p>Range: $2^{${M-1}} < K \\le 2^{${M}}$</p>
+                <p class="font-bold text-[#005088] mt-2">Result: $K \\in [${lower}, ${upper}]$</p>
+            `;
+            document.getElementById('res-ex5a').innerHTML = html;
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function calcEx5b() {
+            // Formula: K * ceil(log2(F/2 + 1)) = N * K
+            // Simplify: ceil(log2(F/2 + 1)) = N
+            // 2^(N-1) < F/2 + 1 <= 2^N
+            // 2^(N-1) - 1 < F/2 <= 2^N - 1
+            // 2*(2^(N-1) - 1) < F <= 2*(2^N - 1)
+            // Range must be EVEN numbers.
+            
+            const N = parseInt(document.getElementById('ex5-n').value);
+            const termLower = Math.pow(2, N - 1);
+            const termUpper = Math.pow(2, N);
+            
+            const rangeLower = 2 * (termLower - 1) + 2; // Next even number
+            const rangeUpper = 2 * (termUpper - 1);
+            
+            const html = `
+                <p>Equation: $K \\lceil \\log_2(F/2 + 1) \\rceil = ${N}K$</p>
+                <p>Simplify: $\\lceil \\log_2(F/2 + 1) \\rceil = ${N}$</p>
+                <p>Log Range: $${termLower} < F/2 + 1 \\le ${termUpper}$</p>
+                <p class="font-bold text-[#005088] mt-2">Result: $F \\in [${rangeLower} : 2 : ${rangeUpper}]$ (Even numbers)</p>
+            `;
+            document.getElementById('res-ex5b').innerHTML = html;
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function calcEx5c() {
+            // New metadata: announces TOTAL frame length.
+            // Max Frame Length = K * MaxReq
+            // Bits = ceil(log2(K * MaxReq))
+            // Max Allocation Packet = New Bits + MaxFrame * ceil(log2(K))
+            
+            const K = parseInt(document.getElementById('ex5-k').value);
+            const Req = parseInt(document.getElementById('ex5-req').value);
+            
+            const maxFrame = K * Req;
+            const newMetaBits = Math.ceil(Math.log2(maxFrame));
+            
+            const bitsPerSlotID = Math.ceil(Math.log2(K));
+            const totalAllocBits = newMetaBits + (maxFrame * bitsPerSlotID);
+            
+            const html = `
+                <p>1. <strong>New Metadata Field:</strong> Stores total frame length.</p>
+                <p>Max Frame $F_{max} = K \\times Req = ${K} \\times ${Req} = ${maxFrame}$ slots.</p>
+                <p>Field Bits = $\\lceil \\log_2(${maxFrame}) \\rceil = \\mathbf{${newMetaBits}}$ bits.</p>
+                <div class="border-t border-slate-300 my-2"></div>
+                <p>2. <strong>Max Allocation Packet:</strong></p>
+                <p>Alloc Bits per Slot = $\\lceil \\log_2 K \\rceil = ${bitsPerSlotID}$</p>
+                <p>Total = NewMeta + ($F_{max} \\times$ AllocBits)</p>
+                <p>Total = ${newMetaBits} + (${maxFrame} $\\times$ ${bitsPerSlotID}) = <strong class="text-[#005088]">${totalAllocBits} bits</strong></p>
+            `;
+            document.getElementById('res-ex5c').innerHTML = html;
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        // Init
+        window.onload = () => {
+            updateComparisonChart();
+            // Pre-calculate Q5 defaults
+            calcEx5a();
+            calcEx5b();
+            calcEx5c();
+        };
+
+    </script>
+</body>
+</html>
