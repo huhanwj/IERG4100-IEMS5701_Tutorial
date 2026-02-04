@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IERG4100 Tutorial 3: Beyond the Collision Channel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .tab-active { border-bottom: 2px solid #005088; color: #005088; font-weight: 600; }
+        .tab-inactive { color: #64748b; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .disk-region { transition: all 0.3s; }
+        .disk-region:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-[#005088]">IERG4100 Tutorial 3</h1>
+                <p class="text-sm text-slate-500">Access Beyond the Collision Channel</p>
+            </div>
+            <a href="index.html" class="text-sm text-[#005088] hover:underline">← Back to Home</a>
+        </div>
+    </header>
+
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full overflow-x-auto">
+        <div class="flex space-x-6 border-b border-slate-200 min-w-max" id="nav-tabs">
+            <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-active pb-4 px-1 text-sm font-medium transition-colors">Core Concepts</button>
+            <button onclick="switchTab('model')" id="tab-model" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">Double-Disk Model</button>
+            <button onclick="switchTab('goodput')" id="tab-goodput" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">Throughput vs Goodput</button>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- ========== SECTION 1: CORE CONCEPTS ========== -->
+        <section id="content-concepts" class="space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Beyond the Collision Channel</h2>
+                <p class="text-slate-600">Distance-dependent reception and probabilistic error models</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4 text-2xl">💥</div>
+                    <h3 class="font-bold text-[#005088] mb-3">Collision Channel Limitations</h3>
+                    <ul class="text-sm text-slate-600 space-y-2">
+                        <li>• Any overlap = 100% packet loss (pessimistic)</li>
+                        <li>• No distance consideration</li>
+                        <li>• No capture effect modeled</li>
+                        <li>• Reality: gradual degradation with distance</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 text-2xl">📡</div>
+                    <h3 class="font-bold text-[#005088] mb-3">Distance-Dependent Model</h3>
+                    <ul class="text-sm text-slate-600 space-y-2">
+                        <li>• Error probability $p_e(d)$ increases with distance</li>
+                        <li>• Packet reception is probabilistic</li>
+                        <li>• Capture effect possible</li>
+                        <li>• SIC can recover collided packets</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Throughput Formula -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">Long-term Average Throughput</h3>
+                
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-xl mb-6">
+                    <div class="text-center text-2xl font-bold">
+                        $T_{avg} = R \times (1 - p_e(d))$
+                    </div>
+                    <div class="text-center text-sm mt-2 opacity-90">
+                        $p_e(d)$: error probability as function of distance
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                    <p class="text-sm text-amber-800">
+                        <strong>Key Insight:</strong> Unlike collision channel where reception is binary (0 or 1), 
+                        the distance-dependent model allows for partial reception. Even with collision, 
+                        stronger signal may be decoded (capture effect) or both decoded using SIC.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Possible Outcomes Table -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Distance-Dependent Collision Outcomes</h3>
+                
+                <p class="text-sm text-slate-600 mb-4">
+                    When Zoya (distance $d_1$) and Xia (distance $d_2$) transmit simultaneously to Basil:
+                </p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-slate-100">
+                                <th class="p-3 text-left font-bold text-slate-700">Outcome</th>
+                                <th class="p-3 text-left font-bold text-slate-700">Condition</th>
+                                <th class="p-3 text-left font-bold text-slate-700">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-3 text-red-700 font-medium">Real Collision</td>
+                                <td class="p-3">Both too weak</td>
+                                <td class="p-3">Basil cannot decode either packet</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 text-orange-700 font-medium">Capture Effect</td>
+                                <td class="p-3">One strong, one weak</td>
+                                <td class="p-3">Stronger signal decoded, weaker lost</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 text-green-700 font-medium">Both Success</td>
+                                <td class="p-3">SIC applied</td>
+                                <td class="p-3">Decode strong first, cancel, then decode weak</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 text-slate-700 font-medium">Both Fail</td>
+                                <td class="p-3">Both outside range</td>
+                                <td class="p-3">Signal too weak to detect</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION 2: DOUBLE-DISK MODEL ========== -->
+        <section id="content-model" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Double-Disk Model</h2>
+                <p class="text-slate-600">Simplified distance-dependent model with strong and weak reception regions</p>
+            </div>
+
+            <!-- Model Visualization -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">Model Structure</h3>
+                
+                <div class="flex justify-center mb-6">
+                    <div class="relative w-80 h-80">
+                        <!-- Outer disk (weak) -->
+                        <div class="absolute inset-0 bg-orange-100 rounded-full border-2 border-orange-300 flex items-center justify-center">
+                            <span class="text-xs text-orange-600 absolute top-2">Weak Region (d < d₂)</span>
+                        </div>
+                        <!-- Inner disk (strong) -->
+                        <div class="absolute inset-8 bg-blue-100 rounded-full border-2 border-blue-300 flex items-center justify-center">
+                            <span class="text-xs text-blue-600 absolute top-2">Strong Region (d < d₁)</span>
+                        </div>
+                        <!-- Base station -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-[#005088] rounded-full flex items-center justify-center text-white font-bold">B</div>
+                        </div>
+                        <!-- Labels -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+                            <div class="text-xs text-slate-500">Zoya/Yoshi (Strong)</div>
+                        </div>
+                        <div class="absolute top-1/4 right-2 text-center">
+                            <div class="text-xs text-slate-500">Xia (Weak)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="disk-region bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <h4 class="font-bold text-blue-800 mb-2">Strong Reception Region</h4>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• Distance: d < d₁</li>
+                            <li>• Reception probability: 1 (perfect)</li>
+                            <li>• Users: Zoya, Yoshi</li>
+                            <li>• Can receive header & data reliably</li>
+                        </ul>
+                    </div>
+                    <div class="disk-region bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                        <h4 class="font-bold text-orange-800 mb-2">Weak Reception Region</h4>
+                        <ul class="text-sm text-orange-700 space-y-1">
+                            <li>• Distance: d₁ ≤ d < d₂</li>
+                            <li>• Reception probability: p < 1</li>
+                            <li>• Users: Xia</li>
+                            <li>• Header loss causes data discard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Downlink Design -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">Downlink Design with Header Repetition</h3>
+                
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-6">
+                    <p class="text-sm text-amber-800">
+                        <strong>Problem:</strong> If Xia doesn't receive the frame header, she cannot interpret whether data is intended for her. 
+                        The header is more important than data!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-700">Single Header Frame</h4>
+                        <div class="bg-slate-50 p-3 rounded border">
+                            <div class="flex items-center space-x-1 text-xs font-mono">
+                                <div class="bg-yellow-200 px-2 py-1 rounded">FH</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D1</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D2</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D3</div>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• P(header received) = p</li>
+                            <li>• E[packets] = 3p (if header OK)</li>
+                            <li>• Else: 0 packets</li>
+                            <li>• Total: L<sub>p</sub> = 3p²</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-700">Double Header Frame</h4>
+                        <div class="bg-slate-50 p-3 rounded border">
+                            <div class="flex items-center space-x-1 text-xs font-mono">
+                                <div class="bg-yellow-200 px-2 py-1 rounded">FH</div>
+                                <div class="bg-yellow-200 px-2 py-1 rounded">FH</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D1</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D2</div>
+                                <div class="bg-blue-200 px-2 py-1 rounded">D3</div>
+                            </div>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• P(header received) = 1 - (1-p)²</li>
+                            <li>• E[packets] = 3p × [1-(1-p)²]</li>
+                            <li>• Higher success probability</li>
+                            <li>• But: more overhead</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                    <h4 class="font-bold text-purple-800 mb-2">Goodput Comparison</h4>
+                    <div class="text-sm text-purple-700 space-y-2">
+                        <p><strong>Single header:</strong> $G = \frac{L_p \cdot p}{T_{FH} + L_p \cdot T_{slot}}$</p>
+                        <p><strong>Double header:</strong> $G = \frac{L_p \cdot p \cdot [1-(1-p)^2]}{2T_{FH} + L_p \cdot T_{slot}}$</p>
+                        <p class="text-xs mt-2">Trade-off: Reliability vs overhead. Optimal strategy: use single header for strong devices, double header only when weak devices are targeted.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION 3: THROUGHPUT VS GOODPUT ========== -->
+        <section id="content-goodput" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Throughput vs Goodput</h2>
+                <p class="text-slate-600">Understanding the difference and calculating with header overhead</p>
+            </div>
+
+            <!-- Definitions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-blue-200">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3">📊 Throughput</h3>
+                    <p class="text-sm text-slate-600 mb-3">
+                        Raw data rate including all transmitted bits (headers + data).
+                    </p>
+                    <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 font-mono">
+                        Throughput = R × p
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Where R is data rate, p is reception probability
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-green-200">
+                    <h3 class="font-bold text-green-800 text-lg mb-3">✓ Goodput</h3>
+                    <p class="text-sm text-slate-600 mb-3">
+                        Useful data rate excluding overhead (headers, retransmissions).
+                    </p>
+                    <div class="bg-green-50 p-3 rounded text-sm text-green-700 font-mono">
+                        Goodput = $\frac{L_p \cdot R \cdot p}{T_{overhead} + L_p \cdot T_{slot}}$
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Actual application-level data rate achieved
+                    </p>
+                </div>
+            </div>
+
+            <!-- Exercise 3.2 / Q8 Calculator -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">🎮 Exercise 3.2: Throughput & Goodput Calculator</h3>
+                
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 mb-2">Problem Statement</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-3">
+                                Consider a downlink TDMA frame to Xia with <strong>4 data slots</strong>. The data transmission rate is <strong>20 bps</strong>. 
+                                The duration of each time slot is <strong>1s</strong>. Xia receives a packet from Basil with probability <strong>0.6</strong>.
+                            </p>
+                            <div class="mt-3">
+                                <p class="text-sm font-medium text-slate-700">Questions:</p>
+                                <ol class="text-sm text-slate-600 ml-4 list-decimal">
+                                    <li>Calculate the throughput and goodput if the frame header of 8-bit long is <strong>only sent once</strong></li>
+                                    <li>Calculate the throughput and goodput if the frame header of 8-bit long is <strong>sent twice</strong></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Data Rate R (bps)</label>
+                            <input type="number" id="ex32-r" value="20" class="mt-1 w-full p-2 border rounded" oninput="calculateEx32()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Number of Data Slots (L<sub>p</sub>)</label>
+                            <input type="number" id="ex32-lp" value="4" class="mt-1 w-full p-2 border rounded" oninput="calculateEx32()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Slot Duration (s)</label>
+                            <input type="number" id="ex32-ts" value="1" class="mt-1 w-full p-2 border rounded" oninput="calculateEx32()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Reception Probability (p)</label>
+                            <input type="number" id="ex32-p" value="0.6" step="0.1" max="1" class="mt-1 w-full p-2 border rounded" oninput="calculateEx32()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Header Length (bits)</label>
+                            <input type="number" id="ex32-h" value="8" class="mt-1 w-full p-2 border rounded" oninput="calculateEx32()">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 class="font-bold text-blue-800 mb-3">Case (a): Single Header</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>Throughput:</span>
+                                    <span class="font-bold text-blue-800" id="ex32-tput1">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Goodput:</span>
+                                    <span class="font-bold text-green-700" id="ex32-gput1">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 class="font-bold text-purple-800 mb-3">Case (b): Double Header</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span>P(header OK):</span>
+                                    <span class="font-mono text-purple-800" id="ex32-ph2">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Throughput:</span>
+                                    <span class="font-bold text-blue-800" id="ex32-tput2">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Goodput:</span>
+                                    <span class="font-bold text-green-700" id="ex32-gput2">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                            <h4 class="font-bold text-amber-800 mb-2">Comparison</h4>
+                            <p class="text-sm text-amber-700" id="ex32-comp">
+                                Double header increases header success probability but adds overhead.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise 3.1 / Q7 Calculator -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">🎮 Exercise 3.1: Distance from Throughput</h3>
+                
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 mb-2">Problem Statement</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Consider a static downlink TDMA system. Each frame contains <strong>F data slots</strong>. 
+                                Zoya is allocated with <strong>m slots</strong>. The base station transmits at a rate of <strong>R bps</strong>. 
+                                Assume that the transmission error is <strong>p<sub>e</sub>(d)</strong>. 
+                                The throughput measured at Zoya is <strong>T<sub>h</sub></strong>. 
+                                <strong>Determine the distance</strong> between base station and Zoya.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Frame Slots (F)</label>
+                            <input type="number" id="ex31-f" value="10" class="mt-1 w-full p-2 border rounded" oninput="calculateEx31()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Allocated Slots (m)</label>
+                            <input type="number" id="ex31-m" value="2" class="mt-1 w-full p-2 border rounded" oninput="calculateEx31()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Data Rate R (bps)</label>
+                            <input type="number" id="ex31-r" value="100" class="mt-1 w-full p-2 border rounded" oninput="calculateEx31()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Measured Throughput T<sub>h</sub> (bps)</label>
+                            <input type="number" id="ex31-th" value="15" class="mt-1 w-full p-2 border rounded" oninput="calculateEx31()">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-slate-700 mb-3">Solution Steps</h4>
+                        <div class="space-y-3 text-sm">
+                            <div class="p-3 bg-white rounded border">
+                                <div class="text-slate-600 mb-1">Step 1: Throughput formula</div>
+                                <div class="font-mono text-xs">T<sub>h</sub> = (m·R·(1-p<sub>e</sub>))/F</div>
+                            </div>
+                            <div class="p-3 bg-white rounded border">
+                                <div class="text-slate-600 mb-1">Step 2: Solve for p<sub>e</sub></div>
+                                <div class="font-mono text-xs">p<sub>e</sub> = 1 - T<sub>h</sub>·F/(m·R)</div>
+                            </div>
+                            <div class="p-3 bg-white rounded border">
+                                <div class="text-slate-600 mb-1">Step 3: Find distance</div>
+                                <div class="font-mono text-xs">d = p<sub>e</sub><sup>-1</sup>(p<sub>e</sub>)</div>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded border border-blue-200">
+                                <div class="text-blue-800 font-bold">Calculated Error Prob:</div>
+                                <div class="font-mono text-2xl text-[#005088]" id="ex31-pe">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+            <p>IERG4100 Tutorial 3 - Access Beyond the Collision Channel</p>
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#nav-tabs button').forEach(el => {
+                el.classList.remove('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+                el.classList.add('tab-inactive', 'text-slate-500');
+            });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('tab-inactive', 'text-slate-500');
+            activeBtn.classList.add('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+        }
+
+        function calculateEx32() {
+            const R = parseFloat(document.getElementById('ex32-r').value) || 0;
+            const Lp = parseFloat(document.getElementById('ex32-lp').value) || 0;
+            const Ts = parseFloat(document.getElementById('ex32-ts').value) || 1;
+            const p = parseFloat(document.getElementById('ex32-p').value) || 0;
+            const H = parseFloat(document.getElementById('ex32-h').value) || 0;
+            
+            // Case (a): Single header
+            const tput1 = R * p;
+            const frameTime1 = (H/R) + Lp * Ts;
+            const gput1 = (Lp * R * p * p) / frameTime1;
+            
+            // Case (b): Double header
+            const ph2 = 1 - Math.pow(1-p, 2);
+            const tput2 = R * p; // Same throughput
+            const frameTime2 = 2*(H/R) + Lp * Ts;
+            const gput2 = (Lp * R * p * ph2) / frameTime2;
+            
+            document.getElementById('ex32-tput1').textContent = tput1.toFixed(1) + ' bps';
+            document.getElementById('ex32-gput1').textContent = gput1.toFixed(2) + ' bps';
+            document.getElementById('ex32-ph2').textContent = ph2.toFixed(3);
+            document.getElementById('ex32-tput2').textContent = tput2.toFixed(1) + ' bps';
+            document.getElementById('ex32-gput2').textContent = gput2.toFixed(2) + ' bps';
+            
+            const better = gput2 > gput1 ? "Double header provides better goodput!" : "Single header is more efficient.";
+            document.getElementById('ex32-comp').textContent = better;
+        }
+
+        function calculateEx31() {
+            const F = parseFloat(document.getElementById('ex31-f').value) || 1;
+            const m = parseFloat(document.getElementById('ex31-m').value) || 1;
+            const R = parseFloat(document.getElementById('ex31-r').value) || 1;
+            const Th = parseFloat(document.getElementById('ex31-th').value) || 0;
+            
+            // pe = 1 - Th*F/(m*R)
+            const pe = 1 - (Th * F) / (m * R);
+            
+            document.getElementById('ex31-pe').textContent = pe.toFixed(4);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateEx32();
+            calculateEx31();
+        });
+    </script>
+</body>
+</html>

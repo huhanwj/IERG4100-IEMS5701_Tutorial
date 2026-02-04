@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IERG4100 Tutorial 2: Random Access Protocols</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .tab-active { border-bottom: 2px solid #005088; color: #005088; font-weight: 600; }
+        .tab-inactive { color: #64748b; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .timeline-slot { transition: all 0.3s; }
+        .timeline-slot:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-[#fdfbf7] text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-[#005088]">IERG4100 Tutorial 2</h1>
+                <p class="text-sm text-slate-500">Random Access Protocols</p>
+            </div>
+            <a href="index.html" class="text-sm text-[#005088] hover:underline">← Back to Home</a>
+        </div>
+    </header>
+
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full overflow-x-auto">
+        <div class="flex space-x-6 border-b border-slate-200 min-w-max" id="nav-tabs">
+            <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-active pb-4 px-1 text-sm font-medium transition-colors">Core Concepts</button>
+            <button onclick="switchTab('aloha')" id="tab-aloha" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">Framed ALOHA</button>
+            <button onclick="switchTab('csma')" id="tab-csma" class="tab-inactive pb-4 px-1 text-sm font-medium transition-colors">CSMA/CA</button>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- ========== SECTION 1: CORE CONCEPTS ========== -->
+        <section id="content-concepts" class="space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Random Access Protocols</h2>
+                <p class="text-slate-600">Uncoordinated access to shared wireless medium when active devices are few but total population is large</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-2xl">🎲</div>
+                    <h3 class="font-bold text-[#005088] mb-3">Framed ALOHA</h3>
+                    <p class="text-sm text-slate-600 mb-3">Random access with reservation slots. Each active device picks a random slot to send reservation.</p>
+                    <ul class="text-xs text-slate-500 space-y-1">
+                        <li>• S<sub>R</sub> = K<sub>A</sub> for optimal performance</li>
+                        <li>• P(success) → 1/e ≈ 0.368</li>
+                        <li>• Flexible frame size F = S (successful reservations)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 text-2xl">🌳</div>
+                    <h3 class="font-bold text-[#005088] mb-3">Probing (Tree Splitting)</h3>
+                    <p class="text-sm text-slate-600 mb-3">Resolve collisions by recursively splitting groups of colliding devices using random coin tosses.</p>
+                    <ul class="text-xs text-slate-500 space-y-1">
+                        <li>• No need to know K<sub>A</sub> in advance</li>
+                        <li>• Creates temporary short addresses</li>
+                        <li>• Memory in randomization process</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 text-2xl">👂</div>
+                    <h3 class="font-bold text-[#005088] mb-3">CSMA/CA</h3>
+                    <p class="text-sm text-slate-600 mb-3">Carrier Sense Multiple Access with Collision Avoidance. Listen before transmit, use backoff on collision.</p>
+                    <ul class="text-xs text-slate-500 space-y-1">
+                        <li>• Sense channel idle for minislot</li>
+                        <li>• Random backoff after collision</li>
+                        <li>• ACK feedback for reliability</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Scenario Description -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">The "Crowded Dark Room" Scenario</h3>
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-4">
+                    <p class="text-sm text-amber-800">
+                        <strong>Problem Setting:</strong> Basil (base station) is in a crowded room with K total sensors, but only a few K<sub>A</sub> are active at any time. It's inefficient to poll each device one by one. Random access allows devices to transmit without coordination.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-slate-700 text-sm mb-2">Key Characteristics</h4>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• Large K (total devices), small K<sub>A</sub> (active devices)</li>
+                            <li>• Low probability of activity per device</li>
+                            <li>• Small data packets (D bits)</li>
+                            <li>• Short frame duration (F slots)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-slate-700 text-sm mb-2">Applications</h4>
+                        <ul class="text-sm text-slate-600 space-y-1">
+                            <li>• Massive IoT scenarios</li>
+                            <li>• Initial access / device discovery</li>
+                            <li>• Sporadic traffic (smart meters, sensors)</li>
+                            <li>• Event-driven reporting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION 2: FRAMED ALOHA ========== -->
+        <section id="content-aloha" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Framed ALOHA</h2>
+                <p class="text-slate-600">Optimized random access with reservation slots and variable frame size</p>
+            </div>
+
+            <!-- Theory Card -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">Success Probability & Optimization</h3>
+                
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-xl mb-6">
+                    <div class="text-center text-2xl font-bold mb-2">
+                        P(success) = $(1 - \frac{1}{S_R})^{K_A - 1}$
+                    </div>
+                    <div class="text-center text-lg">
+                        When $S_R = K_A$: P(success) ≈ $\frac{1}{e}$ ≈ 0.368
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-800 mb-2">Key Insight</h4>
+                        <p class="text-sm text-blue-700">
+                            The probability is maximized when the number of reservation slots equals the number of active devices. 
+                            Expected successful reservations: $E[F] = K_A \times P(K_A) \approx K_A/e$
+                        </p>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-indigo-800 mb-2">Estimating K<sub>A</sub></h4>
+                        <p class="text-sm text-indigo-700">
+                            $K_A^{(L)} = K_N + K_A^{(L-1)} \times (1 - P(K_A^{(L-1)}))$<br>
+                            New arrivals + Previously collided devices
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise 2.1 / Q3 Calculator -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">🎮 Exercise 2.1: Estimating Active Devices</h3>
+                
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 mb-2">Problem Statement</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Consider a framed ALOHA system with a certain frame length. It is known that the number of newly generated requests in each frame is around <strong>200</strong>.
+                            </p>
+                            <div class="mt-3">
+                                <p class="text-sm font-medium text-slate-700">Questions:</p>
+                                <ol class="text-sm text-slate-600 ml-4 list-decimal">
+                                    <li>Estimate the number of active devices in each frame</li>
+                                    <li>Estimate the expected number of data slots in each frame</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
+                    <h4 class="font-bold text-blue-800 text-sm mb-2">💡 Solution Approach</h4>
+                    <p class="text-sm text-blue-700">
+                        When $S_R = K_A$ and $K_A$ is large, $P(K_A) \approx 1/e$. The expected active devices include new arrivals ($K_N$) plus previously collided devices divided by success probability.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">New Requests per Frame (K<sub>N</sub>)</label>
+                            <input type="number" id="ex21-kn" value="200" class="mt-1 w-full p-2 border rounded" oninput="calculateEx21()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Success Probability P(K<sub>A</sub>)</label>
+                            <input type="number" id="ex21-p" value="0.368" step="0.001" class="mt-1 w-full p-2 border rounded" oninput="calculateEx21()">
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-slate-700 mb-3">Calculation</h4>
+                        <div class="space-y-3 text-sm">
+                            <div class="p-3 bg-white rounded border">
+                                <div class="text-slate-600 mb-1">Active devices: K<sub>A</sub> = K<sub>N</sub> × e</div>
+                                <div class="font-mono text-[#005088]" id="ex21-ka">K<sub>A</sub> = 200 × 2.718 = 543.6 ≈ 544</div>
+                            </div>
+                            <div class="p-3 bg-white rounded border">
+                                <div class="text-slate-600 mb-1">Expected data slots: E[F] = K<sub>A</sub> × P(K<sub>A</sub>)</div>
+                                <div class="font-mono text-[#005088]" id="ex21-ef">E[F] = 544 × 0.368 = 200</div>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded border border-green-200">
+                                <strong class="text-green-800">Result:</strong> <span class="text-green-700">E[F] ≈ K<sub>N</sub> = 200 slots</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION 3: CSMA/CA ========== -->
+        <section id="content-csma" class="hidden space-y-8 animate-fade-in">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">CSMA/CA</h2>
+                <p class="text-slate-600">Carrier Sense Multiple Access with Collision Avoidance</p>
+            </div>
+
+            <!-- CSMA Rules -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">CSMA/CA Protocol Rules</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                            <span class="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                            <div>
+                                <div class="font-medium text-blue-800">Carrier Sensing</div>
+                                <div class="text-sm text-blue-600">Sense channel for one full minislot before transmitting</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                            <span class="bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                            <div>
+                                <div class="font-medium text-green-800">Immediate ACK</div>
+                                <div class="text-sm text-green-600">Receiver sends ACK after SIFS (Short Inter-Frame Space)</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
+                            <span class="bg-purple-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                            <div>
+                                <div class="font-medium text-purple-800">Backoff on Collision</div>
+                                <div class="text-sm text-purple-600">Random K ∈ [0, 7] minislots wait before retry</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-slate-700 mb-3">Timing Parameters</h4>
+                        <ul class="text-sm text-slate-600 space-y-2">
+                            <li><strong>Minislot Duration:</strong> 10 µs</li>
+                            <li><strong>Data Packet:</strong> 150 µs</li>
+                            <li><strong>ACK Packet:</strong> 20 µs</li>
+                            <li><strong>SIFS:</strong> 10 µs</li>
+                            <li><strong>Backoff Range:</strong> K ∈ [0, 7]</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise 3 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                <h3 class="text-lg font-bold text-[#005088] mb-4">🎮 Exercise 3: CSMA/CA Timeline Analysis</h3>
+                
+                <div class="bg-slate-100 border-l-4 border-slate-500 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-3">📖</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 mb-2">Problem Statement</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-3">
+                                Assume a wireless network using the CSMA/CA protocol where two devices, <strong>Zoya</strong> and <strong>Xia</strong>, both want to send a data packet to the base station.
+                            </p>
+                            <div class="bg-white p-3 rounded border border-slate-200 mb-3">
+                                <p class="text-sm text-slate-700"><strong>System Parameters:</strong></p>
+                                <ul class="text-sm text-slate-600 ml-4 list-disc">
+                                    <li>Minislot Duration: 10 µs</li>
+                                    <li>Data Packet Transmission Time: 150 µs</li>
+                                    <li>ACK Packet Transmission Time: 20 µs</li>
+                                    <li>SIFS: 10 µs</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-3 rounded border border-slate-200 mb-3">
+                                <p class="text-sm text-slate-700"><strong>Rules:</strong></p>
+                                <ul class="text-sm text-slate-600 ml-4 list-disc">
+                                    <li>Rule 1: Device must sense channel idle for one full minislot before transmitting</li>
+                                    <li>Rule 2: After collision, choose random K ∈ [0,7] backoff minislots</li>
+                                </ul>
+                            </div>
+                            <div class="bg-amber-50 p-3 rounded border border-amber-200">
+                                <p class="text-sm text-slate-700"><strong>Scenario:</strong></p>
+                                <ul class="text-sm text-slate-600 ml-4 list-disc">
+                                    <li>t = 0: Channel is idle</li>
+                                    <li>t = 5 µs: Zoya has packet ready</li>
+                                    <li>t = 8 µs: Xia has packet ready</li>
+                                    <li>After collision: K<sub>Zoya</sub> = 2, K<sub>Xia</sub> = 5</li>
+                                </ul>
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-sm font-medium text-slate-700">Questions:</p>
+                                <ol class="text-sm text-slate-600 ml-4 list-decimal">
+                                    <li>During which minislot will each sense the channel? What is the result?</li>
+                                    <li>When do they start backoff? Who transmits first after backoff?</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Timeline -->
+                <div class="bg-slate-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-slate-700 mb-4">🎮 Interactive Timeline Visualization</h4>
+                    
+                    <div class="relative">
+                        <!-- Timeline -->
+                        <div class="flex items-center space-x-1 overflow-x-auto pb-4" id="csma-timeline">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Zoya Ready (µs)</label>
+                            <input type="number" id="csma-zoya-ready" value="5" class="mt-1 w-full p-2 border rounded" oninput="updateCSMATimeline()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Xia Ready (µs)</label>
+                            <input type="number" id="csma-xia-ready" value="8" class="mt-1 w-full p-2 border rounded" oninput="updateCSMATimeline()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Data Duration (µs)</label>
+                            <input type="number" id="csma-data-dur" value="150" class="mt-1 w-full p-2 border rounded" oninput="updateCSMATimeline()">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-white rounded border">
+                        <h5 class="font-bold text-slate-700 mb-2">Analysis Results</h5>
+                        <div id="csma-analysis" class="text-sm text-slate-600 space-y-1">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+            <p>IERG4100 Tutorial 2 - Random Access Protocols</p>
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('#nav-tabs button').forEach(el => {
+                el.classList.remove('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+                el.classList.add('tab-inactive', 'text-slate-500');
+            });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('tab-inactive', 'text-slate-500');
+            activeBtn.classList.add('tab-active', 'border-b-2', 'border-[#005088]', 'text-[#005088]');
+            
+            if (tabId === 'csma') updateCSMATimeline();
+        }
+
+        function calculateEx21() {
+            const Kn = parseFloat(document.getElementById('ex21-kn').value) || 0;
+            const p = parseFloat(document.getElementById('ex21-p').value) || 0.368;
+            
+            const Ka = Kn * Math.E;
+            const Ef = Ka * p;
+            
+            document.getElementById('ex21-ka').innerHTML = `K<sub>A</sub> = ${Kn} × 2.718 = ${Ka.toFixed(1)} ≈ ${Math.round(Ka)}`;
+            document.getElementById('ex21-ef').innerHTML = `E[F] = ${Math.round(Ka)} × ${p} = ${Ef.toFixed(1)} ≈ ${Math.round(Ef)}`;
+        }
+
+        function updateCSMATimeline() {
+            const zoyaReady = parseInt(document.getElementById('csma-zoya-ready').value) || 5;
+            const xiaReady = parseInt(document.getElementById('csma-xia-ready').value) || 8;
+            const dataDur = parseInt(document.getElementById('csma-data-dur').value) || 150;
+            const minislot = 10;
+            
+            // Calculate timeline
+            const firstMinislotEnd = 20; // First minislot ends at 20µs
+            const collisionStart = 20;
+            const collisionEnd = 20 + dataDur;
+            
+            // Generate timeline HTML
+            let timelineHTML = '';
+            const totalTime = 400; // Show up to 400µs
+            
+            // Markers
+            for (let t = 0; t <= totalTime; t += 20) {
+                timelineHTML += `<div class="flex-shrink-0 w-20 text-center text-xs text-slate-500">${t}µs</div>`;
+            }
+            
+            document.getElementById('csma-timeline').innerHTML = timelineHTML;
+            
+            // Analysis
+            const analysis = `
+                <p><strong>First Sensing Minislot:</strong> 10-20µs (both devices ready before this)</p>
+                <p><strong>Transmission Start:</strong> t = 20µs (both start simultaneously)</p>
+                <p><strong>Collision:</strong> ${collisionStart}-${collisionEnd}µs</p>
+                <p><strong>Backoff Start:</strong> ${collisionEnd}µs (end of data transmission)</p>
+                <p><strong>Zoya transmits:</strong> t = ${collisionEnd + 20 + 2*10}µs (K=2, after sensing)</p>
+                <p><strong>Xia transmits:</strong> t = ${collisionEnd + 20 + 5*10}µs (K=5, after sensing)</p>
+            `;
+            document.getElementById('csma-analysis').innerHTML = analysis;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateEx21();
+            updateCSMATimeline();
+        });
+    </script>
+</body>
+</html>
